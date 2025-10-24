@@ -48,22 +48,24 @@ def upgrade() -> None:
         ),
     )
 
-    # remove server defaults now that columns are populated
-    op.alter_column(
-        "config_profiles",
-        "scan_interval_seconds",
-        server_default=None,
-    )
-    op.alter_column(
-        "config_profiles",
-        "close_interval_seconds",
-        server_default=None,
-    )
-    op.alter_column(
-        "config_profiles",
-        "open_interval_seconds",
-        server_default=None,
-    )
+    bind = op.get_bind()
+    if bind.dialect.name != "sqlite":
+        # remove server defaults when backend supports ALTER COLUMN
+        op.alter_column(
+            "config_profiles",
+            "scan_interval_seconds",
+            server_default=None,
+        )
+        op.alter_column(
+            "config_profiles",
+            "close_interval_seconds",
+            server_default=None,
+        )
+        op.alter_column(
+            "config_profiles",
+            "open_interval_seconds",
+            server_default=None,
+        )
 
 
 def downgrade() -> None:
