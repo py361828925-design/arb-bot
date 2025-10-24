@@ -1,0 +1,222 @@
+
+html,
+body {
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: "Inter", "Microsoft YaHei", sans-serif;
+  margin: 0;
+  min-height: 100%;
+}
+
+/* Body 加统一 class 时使用 */
+.app-body {
+  background: #0f172a;
+  color: #e2e8f0;
+  min-height: 100vh;
+  margin: 0;
+}
+
+/* Ant Design 卡片整体背景 / 标题颜色 */
+.ant-card {
+  background: #0b162b;
+  color: #e2e8f0;
+}
+
+.ant-card .ant-card-head-title {
+  color: #f8fafc !important;
+  font-weight: 600;
+}
+
+.ant-card .ant-card-body {
+  color: #e2e8f0;
+}
+
+/* 表单标签颜色 */
+.ant-form-item-label > label {
+  color: #f8fafc !important;
+}
+
+/* 输入框背景和字体颜色 */
+.ant-input,
+.ant-input-number,
+.ant-select-selector {
+  background: #1e293b !important;
+  color: #e2e8f0 !important;
+  border-color: #334155;
+}
+
+.ant-input::placeholder,
+.ant-input-number input::placeholder {
+  color: #94a3b8;
+}
+
+/* 按钮颜色 */
+.ant-btn-primary {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #f8fafc;
+}
+
+.ant-btn-primary:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.ant-btn-default {
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+.ant-btn-default:hover {
+  color: #0ea5e9;
+  border-color: #0ea5e9;
+}
+
+/* Table 表头 / 表体背景与文字 */
+.ant-table {
+  color: #e2e8f0;
+}
+
+.ant-table-tbody > tr > td,
+.ant-table-thead > tr > th {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: #1e293b;
+}
+
+/* 链接颜色 */
+a {
+  color: #38bdf8;
+}
+
+a:hover {
+  color: #0ea5e9;
+}
+
+/* Divider 标题颜色 */
+.ant-divider-inner-text {
+  color: #94a3b8;
+}
+
+/* Switch */
+.ant-switch-checked {
+  background: #22c55e !important;
+}
+
+
+/* 背景与默认文字 */
+body {
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: "Inter", "Microsoft YaHei", sans-serif;
+}
+
+/* Ant Design 卡片 */
+.ant-card {
+  background: #0b162b;
+  color: #e2e8f0;
+}
+
+/* 卡片标题、表单标签 */
+.ant-card .ant-card-head-title,
+.ant-form-item-label > label {
+  color: #f8fafc !important;
+}
+
+/* Ant Typography 默认颜色 */
+.ant-typography {
+  color: #f8fafc;
+}
+
+/* 主按钮样式 */
+.ant-btn-primary {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #f8fafc;
+}
+
+.ant-btn-primary:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+/* 次按钮/默认按钮可视情况加深背景 */
+.ant-btn-default {
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+.ant-btn-default:hover {
+  color: #0ea5e9;
+  border-color: #0ea5e9;
+}
+
+/* 表格颜色 */
+.ant-table {
+  color: #e2e8f0;
+}
+
+.ant-table-tbody > tr > td,
+.ant-table-thead > tr > th {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-color: #1f2937;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: #1e293b;
+}
+
+/* 链接颜色 */
+a {
+  color: #38bdf8;
+}
+
+a:hover {
+  color: #0ea5e9;
+}
+
+/* 分隔线/Divider 标题颜色 */
+.ant-divider,
+.ant-divider-inner-text {
+  color: #94a3b8;
+}
+
+/* 输入框背景 */
+.ant-input,
+.ant-input-number,
+.ant-select-selector {
+  background: #1e293b !important;
+  color: #e2e8f0 !important;
+  border-color: #334155;
+}
+
+.ant-input::placeholder,
+.ant-input-number input::placeholder {
+  color: #94a3b8;
+}
+
+/* Switch 切换按钮颜色 */
+.ant-switch-checked {
+  background: #22c55e !important;
+}
+
+.stat-card .ant-card-head-title {
+  color: #f8fafc !important;
+}
+
+.stat-card .ant-card-body {
+  color: #e2e8f0;
+}
+
+.stat-card .ant-statistic,
+.stat-card .ant-statistic-title,
+.stat-card .ant-statistic-content-value,
+.stat-card .ant-statistic-content-suffix,
+.stat-card .ant-statistic-content-prefix {
+  color: #f8fafc !important;
+}

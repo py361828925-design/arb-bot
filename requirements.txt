@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+httpx
+pydantic
+redis
+aioredis
+asyncpg
+sqlalchemy[asyncio]
+alembic
+python-telegram-bot==20.7
+tenacity
+prometheus-client
+python-dotenv
+orjson
+pydantic-settings

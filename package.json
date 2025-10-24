@@ -1,0 +1,9 @@
+{
+	"dependencies": {
+		"swr": "^2.3.6",
+		"@ant-design/plots": "^2.6.6",
+		"antd": "^5.27.6",
+		"dayjs": "^1.11.18",
+		"classnames": "^2.5.1"
+	}
+}
