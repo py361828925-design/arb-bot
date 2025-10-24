@@ -1,222 +1,567 @@
+:root {
+  color-scheme: dark;
+  --surface-950: #020617;
+  --surface-900: #0f172a;
+  --surface-800: #111c33;
+  --surface-700: #1e293b;
+  --surface-600: #334155;
+  --surface-500: #475569;
+  --accent-400: #38bdf8;
+  --accent-500: #0ea5e9;
+  --primary-500: #2563eb;
+  --primary-600: #1d4ed8;
+  --success-500: #22c55e;
+  --danger-500: #ef4444;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5f5;
+  --text-muted: #94a3b8;
+  --text-warning: #fbbf24;
+  font-family: "Inter", "Microsoft YaHei", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
 
 html,
 body {
-  background: #0f172a;
-  color: #e2e8f0;
-  font-family: "Inter", "Microsoft YaHei", sans-serif;
   margin: 0;
   min-height: 100%;
+  background: radial-gradient(circle at 20% 20%, rgba(14, 165, 233, 0.18), transparent 62%),
+    radial-gradient(circle at 80% 0%, rgba(37, 99, 235, 0.25), transparent 55%),
+    var(--surface-900);
+  color: var(--text-primary);
+  font-family: "Inter", "Microsoft YaHei", sans-serif;
 }
 
-/* Body 加统一 class 时使用 */
+body {
+  background-attachment: fixed;
+}
+
 .app-body {
-  background: #0f172a;
-  color: #e2e8f0;
   min-height: 100vh;
+}
+
+a {
+  color: var(--accent-400);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--accent-500);
+}
+
+.dashboard-shell {
+  min-height: 100vh;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.config-shell {
+  gap: 32px;
+}
+
+.dashboard-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.dashboard-hero {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.22), rgba(2, 6, 23, 0.85)) !important;
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.5);
+  padding: 32px;
+}
+
+.dashboard-hero .ant-card-body {
+  padding: 0;
+}
+
+.dashboard-eyebrow {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.22);
+  color: var(--accent-400);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.dashboard-hero__title {
   margin: 0;
+  font-size: clamp(28px, 4vw, 42px);
+  color: var(--text-primary) !important;
 }
 
-/* Ant Design 卡片整体背景 / 标题颜色 */
-.ant-card {
-  background: #0b162b;
-  color: #e2e8f0;
+.dashboard-hero__subtitle {
+  margin: 12px 0 0;
+  color: var(--text-secondary);
+  max-width: 460px;
 }
 
-.ant-card .ant-card-head-title {
-  color: #f8fafc !important;
+.dashboard-hero__actions {
+  margin-top: 20px;
+}
+
+.dashboard-meta {
+  background: rgba(15, 23, 42, 0.92) !important;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  width: 320px;
+  max-width: 100%;
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.18);
+}
+
+.dashboard-meta .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+}
+
+.dashboard-meta .ant-segmented {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.dashboard-meta .ant-segmented-item-selected {
+  background: rgba(59, 130, 246, 0.35) !important;
+  color: var(--text-primary) !important;
+}
+
+.dashboard-meta .ant-segmented-thumb {
+  background: rgba(59, 130, 246, 0.5);
+}
+
+.config-hero-card {
+  background: rgba(15, 23, 42, 0.92) !important;
+  border-radius: 18px;
+  border: 1px solid rgba(59, 130, 246, 0.18);
+  width: 320px;
+  max-width: 100%;
+  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.12);
+}
+
+.config-hero-card .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px;
+}
+
+.config-hero-card__label {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.config-hero-card__divider {
+  margin: 12px 0;
+  border-color: rgba(148, 163, 184, 0.12) !important;
+}
+
+.config-hero-card__timestamp {
+  margin: 0;
+  color: var(--text-primary) !important;
+}
+
+.config-status {
+  align-self: flex-start;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  border: none !important;
+}
+
+.config-status--active {
+  background: rgba(34, 197, 94, 0.18);
+  color: var(--success-500);
+}
+
+.config-status--paused {
+  background: rgba(239, 68, 68, 0.18);
+  color: var(--danger-500);
+}
+
+.config-form {
+  width: 100%;
+}
+
+.config-card {
+  background: rgba(12, 21, 38, 0.92) !important;
+  border-radius: 18px;
+  border: 1px solid rgba(59, 130, 246, 0.14);
+  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.4);
+}
+
+.config-card .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.config-card .ant-input-number-input {
+  color: var(--text-primary) !important;
+}
+
+.config-card__title {
+  margin: 0;
+  color: var(--text-secondary) !important;
+}
+
+.config-card__subtitle {
+  margin: 0;
+  color: var(--text-muted);
+  max-width: 540px;
+}
+
+.config-form-item .ant-form-item-label > label {
+  color: var(--text-secondary) !important;
+}
+
+.config-actions {
+  padding-top: 8px;
+}
+
+.dashboard-meta__label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.dashboard-meta__divider {
+  margin: 18px 0;
+  border-color: rgba(148, 163, 184, 0.1) !important;
+}
+
+.dashboard-meta__timestamp {
+  margin: 16px 0 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.section-title {
+  margin: 12px 0;
+  color: var(--text-secondary) !important;
+}
+
+.skeleton-card .ant-skeleton-title,
+.skeleton-card .ant-skeleton-paragraph > li,
+.skeleton-table .ant-skeleton-title,
+.skeleton-table .ant-skeleton-paragraph > li {
+  background: rgba(148, 163, 184, 0.12) !important;
+}
+
+.dashboard-header__title {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+}
+
+.dashboard-header__subtitle {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.stat-card {
+  background: linear-gradient(160deg, rgba(56, 189, 248, 0.12) 0%, rgba(17, 24, 39, 0.95) 40%, rgba(2, 6, 23, 0.85) 100%) !important;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 14px;
+  box-shadow: 0 14px 42px rgba(15, 23, 42, 0.35);
+}
+
+.stat-card .ant-card-head {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.stat-card .ant-card-head-title,
+.stat-card .ant-statistic-title {
+  color: var(--text-secondary) !important;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+}
+
+.stat-card .ant-statistic-content-value {
+  font-size: 28px;
+}
+
+.stat-card__meta {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.logic-grid .ant-card {
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  border-radius: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.logic-grid .ant-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.45);
+}
+
+.logic-grid .ant-statistic-title {
+  color: var(--text-muted) !important;
+}
+
+.logic-grid .ant-statistic-content-value {
+  color: var(--text-primary) !important;
+  font-size: 20px;
+}
+
+.logic-grid .ant-statistic-content-suffix {
+  color: var(--text-primary) !important;
+}
+
+.logic-grid__count {
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.data-card {
+  background: rgba(15, 23, 42, 0.92) !important;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.4);
+}
+
+.data-card .ant-card-head {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.data-card .ant-card-head-title {
+  color: var(--text-secondary) !important;
+}
+
+.data-card .ant-table {
+  background: transparent;
+}
+
+.ant-table-thead > tr > th {
+  background: rgba(15, 23, 42, 0.95);
+  color: var(--text-muted);
+  border-color: rgba(51, 65, 85, 0.6);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.ant-table-tbody > tr > td {
+  background: rgba(10, 19, 34, 0.65);
+  border-color: rgba(51, 65, 85, 0.35);
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: rgba(30, 41, 59, 0.9) !important;
+}
+
+.dark-table-row.table-row-positive td {
+  background: rgba(34, 197, 94, 0.08);
+  color: var(--text-primary);
+}
+
+.dark-table-row.table-row-negative td {
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--text-primary);
+}
+
+.table-cell--positive {
+  color: var(--success-500);
   font-weight: 600;
 }
 
-.ant-card .ant-card-body {
-  color: #e2e8f0;
+.table-cell--negative {
+  color: var(--danger-500);
+  font-weight: 600;
 }
 
-/* 表单标签颜色 */
-.ant-form-item-label > label {
-  color: #f8fafc !important;
+.table-cell--muted {
+  color: var(--text-muted);
 }
 
-/* 输入框背景和字体颜色 */
+.table-cell--warning {
+  color: var(--text-warning);
+  font-weight: 600;
+}
+
+.profit {
+  color: var(--success-500);
+}
+
+.loss {
+  color: var(--danger-500);
+}
+
+.countdown-badge.ant-tag {
+  background: rgba(37, 99, 235, 0.18);
+  border-color: rgba(59, 130, 246, 0.35);
+  color: var(--accent-400);
+  font-weight: 600;
+  padding: 3px 10px;
+}
+
+.countdown-badge--warning.ant-tag {
+  background: rgba(234, 179, 8, 0.14);
+  border-color: rgba(250, 204, 21, 0.38);
+  color: var(--text-warning);
+}
+
+.countdown-badge--danger.ant-tag {
+  background: rgba(239, 68, 68, 0.16);
+  border-color: rgba(248, 113, 113, 0.45);
+  color: var(--danger-500);
+}
+
+.label-hint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(56, 189, 248, 0.2);
+  color: var(--accent-400);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.history-layout {
+  min-height: 100vh;
+  padding: 32px;
+  background: linear-gradient(140deg, rgba(37, 99, 235, 0.18), transparent 45%),
+    linear-gradient(320deg, rgba(14, 165, 233, 0.12), transparent 65%),
+    var(--surface-900);
+}
+
+.chart-card {
+  background: rgba(11, 22, 43, 0.92) !important;
+  border-radius: 16px;
+  border: 1px solid rgba(59, 130, 246, 0.12);
+}
+
+.chart-card .ant-card-head-title {
+  color: var(--text-secondary) !important;
+}
+
+.ant-typography {
+  color: var(--text-primary);
+}
+
+.ant-btn-primary {
+  background: var(--primary-500);
+  border-color: var(--primary-500);
+}
+
+.ant-btn-primary:hover {
+  background: var(--primary-600);
+  border-color: var(--primary-600);
+}
+
+.ant-btn-default {
+  border-color: var(--accent-400);
+  color: var(--accent-400);
+}
+
+.ant-btn-default:hover {
+  border-color: var(--accent-500);
+  color: var(--accent-500);
+}
+
 .ant-input,
 .ant-input-number,
 .ant-select-selector {
-  background: #1e293b !important;
-  color: #e2e8f0 !important;
-  border-color: #334155;
+  background: var(--surface-700) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--surface-600);
 }
 
 .ant-input::placeholder,
 .ant-input-number input::placeholder {
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
-/* 按钮颜色 */
-.ant-btn-primary {
-  background: #2563eb;
-  border-color: #2563eb;
-  color: #f8fafc;
-}
-
-.ant-btn-primary:hover {
-  background: #1d4ed8;
-  border-color: #1d4ed8;
-}
-
-.ant-btn-default {
-  border-color: #38bdf8;
-  color: #38bdf8;
-}
-
-.ant-btn-default:hover {
-  color: #0ea5e9;
-  border-color: #0ea5e9;
-}
-
-/* Table 表头 / 表体背景与文字 */
-.ant-table {
-  color: #e2e8f0;
-}
-
-.ant-table-tbody > tr > td,
-.ant-table-thead > tr > th {
-  background: #0f172a;
-  color: #e2e8f0;
-  border-color: #334155;
-}
-
-.ant-table-tbody > tr:hover > td {
-  background: #1e293b;
-}
-
-/* 链接颜色 */
-a {
-  color: #38bdf8;
-}
-
-a:hover {
-  color: #0ea5e9;
-}
-
-/* Divider 标题颜色 */
-.ant-divider-inner-text {
-  color: #94a3b8;
-}
-
-/* Switch */
-.ant-switch-checked {
-  background: #22c55e !important;
-}
-
-
-/* 背景与默认文字 */
-body {
-  background: #0f172a;
-  color: #e2e8f0;
-  font-family: "Inter", "Microsoft YaHei", sans-serif;
-}
-
-/* Ant Design 卡片 */
-.ant-card {
-  background: #0b162b;
-  color: #e2e8f0;
-}
-
-/* 卡片标题、表单标签 */
-.ant-card .ant-card-head-title,
 .ant-form-item-label > label {
-  color: #f8fafc !important;
+  color: var(--text-secondary) !important;
 }
 
-/* Ant Typography 默认颜色 */
-.ant-typography {
-  color: #f8fafc;
-}
-
-/* 主按钮样式 */
-.ant-btn-primary {
-  background: #2563eb;
-  border-color: #2563eb;
-  color: #f8fafc;
-}
-
-.ant-btn-primary:hover {
-  background: #1d4ed8;
-  border-color: #1d4ed8;
-}
-
-/* 次按钮/默认按钮可视情况加深背景 */
-.ant-btn-default {
-  border-color: #38bdf8;
-  color: #38bdf8;
-}
-
-.ant-btn-default:hover {
-  color: #0ea5e9;
-  border-color: #0ea5e9;
-}
-
-/* 表格颜色 */
-.ant-table {
-  color: #e2e8f0;
-}
-
-.ant-table-tbody > tr > td,
-.ant-table-thead > tr > th {
-  background: #0f172a;
-  color: #e2e8f0;
-  border-color: #1f2937;
-}
-
-.ant-table-tbody > tr:hover > td {
-  background: #1e293b;
-}
-
-/* 链接颜色 */
-a {
-  color: #38bdf8;
-}
-
-a:hover {
-  color: #0ea5e9;
-}
-
-/* 分隔线/Divider 标题颜色 */
 .ant-divider,
 .ant-divider-inner-text {
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
-/* 输入框背景 */
-.ant-input,
-.ant-input-number,
-.ant-select-selector {
-  background: #1e293b !important;
-  color: #e2e8f0 !important;
-  border-color: #334155;
-}
-
-.ant-input::placeholder,
-.ant-input-number input::placeholder {
-  color: #94a3b8;
-}
-
-/* Switch 切换按钮颜色 */
 .ant-switch-checked {
-  background: #22c55e !important;
+  background: var(--success-500) !important;
 }
 
-.stat-card .ant-card-head-title {
-  color: #f8fafc !important;
+.empty-hint {
+  padding: 48px 0;
+  color: var(--text-muted);
+  text-align: center;
 }
 
-.stat-card .ant-card-body {
-  color: #e2e8f0;
+.skeleton-container {
+  padding: 32px;
 }
 
-.stat-card .ant-statistic,
-.stat-card .ant-statistic-title,
-.stat-card .ant-statistic-content-value,
-.stat-card .ant-statistic-content-suffix,
-.stat-card .ant-statistic-content-prefix {
-  color: #f8fafc !important;
+@media (max-width: 1024px) {
+  .dashboard-shell {
+    padding: 20px;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dashboard-hero {
+    padding: 24px;
+  }
+
+  .dashboard-meta {
+    width: 100%;
+  }
+
+  .config-hero-card {
+    width: 100%;
+  }
+
+  .stat-card .ant-statistic-content-value {
+    font-size: 24px;
+  }
+
+  .logic-grid .ant-card {
+    min-height: 140px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-shell {
+    padding: 16px;
+  }
+
+  .dashboard-hero {
+    padding: 20px;
+  }
+
+  .config-card .ant-card-body {
+    padding: 24px 20px;
+  }
 }

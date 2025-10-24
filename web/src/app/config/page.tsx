@@ -1,23 +1,28 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
+import dayjs from "dayjs";
 import {
+  Button,
   Card,
+  Col,
+  Divider,
+  Flex,
   Form,
   InputNumber,
-  Switch,
-  Button,
-  message,
-  Divider,
   Row,
-  Col,
+  Skeleton,
   Space,
+  Switch,
+  Tag,
   Tooltip,
+  Typography,
+  message,
 } from "antd";
 import useSWRImmutable from "swr/immutable";
-import { InfoCircleOutlined } from "@ant-design/icons";
 
 import { fetchConfig, updateConfig } from "@/lib/configApi";
+import { type ConfigFormValues } from "@/types/config";
 
 const thresholdMeta = [
   {
@@ -76,7 +81,6 @@ const thresholdMeta = [
     min: 0,
     step: 0.1,
   },
-
 ];
 
 const riskMeta = [
@@ -156,21 +160,25 @@ const intervalMeta = [
 ];
 
 const renderLabel = (label: string, description: string) => (
-  <Space>
+  <Space size={6} align="center">
     <span>{label}</span>
     <Tooltip title={description}>
-      <InfoCircleOutlined />
+      <span className="label-hint">?</span>
     </Tooltip>
   </Space>
 );
 
 export default function ConfigPage() {
-const { data, isLoading, mutate } = useSWRImmutable("/config/current", fetchConfig, {
-  revalidateOnFocus: false,
-  revalidateOnReconnect: false,
-});
+  const { data, isLoading, mutate } = useSWRImmutable(
+    "/config/current",
+    fetchConfig,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    }
+  );
 
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<ConfigFormValues>();
 
   useEffect(() => {
     if (data) {
@@ -185,7 +193,7 @@ const { data, isLoading, mutate } = useSWRImmutable("/config/current", fetchConf
     }
   }, [data, form]);
 
-  const onFinish = async (values: any) => {
+  const onFinish = async (values: ConfigFormValues) => {
     try {
       await updateConfig(values);
       message.success("保存成功");
@@ -196,72 +204,193 @@ const { data, isLoading, mutate } = useSWRImmutable("/config/current", fetchConf
     }
   };
 
-  const thresholdItems = useMemo(() => {
-    return thresholdMeta.map((meta) => (
-      <Col span={8} key={meta.key}>
-        <Form.Item
-          label={renderLabel(meta.label, meta.description)}
-          name={["thresholds", meta.key]}
-        >
-          <InputNumber min={meta.min} step={meta.step} style={{ width: "100%" }} />
-        </Form.Item>
-      </Col>
-    ));
-  }, []);
+  const handleRefresh = useCallback(async () => {
+    const hide = message.loading("正在同步最新配置…", 0);
+    try {
+      await mutate();
+      message.success("已获取最新配置");
+    } catch (error) {
+      console.error(error);
+      message.error("刷新失败，请稍后重试");
+    } finally {
+      hide();
+    }
+  }, [mutate]);
 
-  const riskItems = useMemo(() => {
-    return riskMeta.map((meta) => (
-      <Col span={8} key={meta.key}>
-        <Form.Item
-          label={renderLabel(meta.label, meta.description)}
-          name={["risk_limits", meta.key]}
-        >
-          <InputNumber min={meta.min} step={meta.step} style={{ width: "100%" }} />
-        </Form.Item>
-      </Col>
-    ));
-  }, []);
+  const handleReset = useCallback(() => {
+    form.resetFields();
+  }, [form]);
 
-  const intervalItems = useMemo(() => {
-    return intervalMeta.map((meta) => (
-      <Col span={8} key={meta.key}>
-        <Form.Item
-          label={renderLabel(meta.label, meta.description)}
-          name={meta.key}
-        >
-          <InputNumber min={meta.min} step={meta.step} style={{ width: "100%" }} />
-        </Form.Item>
-      </Col>
-    ));
-  }, []);
+  const thresholdItems = useMemo(
+    () =>
+      thresholdMeta.map((meta) => (
+        <Col xs={24} md={12} lg={8} key={meta.key}>
+          <Form.Item
+            label={renderLabel(meta.label, meta.description)}
+            name={["thresholds", meta.key]}
+          >
+            <InputNumber min={meta.min} step={meta.step} style={{ width: "100%" }} />
+          </Form.Item>
+        </Col>
+      )),
+    []
+  );
+
+  const riskItems = useMemo(
+    () =>
+      riskMeta.map((meta) => (
+        <Col xs={24} md={12} lg={8} key={meta.key}>
+          <Form.Item
+            label={renderLabel(meta.label, meta.description)}
+            name={["risk_limits", meta.key]}
+          >
+            <InputNumber min={meta.min} step={meta.step} style={{ width: "100%" }} />
+          </Form.Item>
+        </Col>
+      )),
+    []
+  );
+
+  const intervalItems = useMemo(
+    () =>
+      intervalMeta.map((meta) => (
+        <Col xs={24} md={12} lg={8} key={meta.key}>
+          <Form.Item
+            label={renderLabel(meta.label, meta.description)}
+            name={meta.key}
+          >
+            <InputNumber min={meta.min} step={meta.step} style={{ width: "100%" }} />
+          </Form.Item>
+        </Col>
+      )),
+    []
+  );
+
+  const lastUpdated = data?.created_at
+    ? dayjs(data.created_at).format("YYYY-MM-DD HH:mm:ss")
+    : "-";
+  const loading = isLoading && !data;
+  const enabled = data?.global_enable ?? false;
+  const statusTag = enabled ? (
+    <Tag className="config-status config-status--active">运行中</Tag>
+  ) : (
+    <Tag className="config-status config-status--paused">已停用</Tag>
+  );
 
   return (
-    <Card
-      title="策略参数配置"
-      loading={isLoading}
-      style={{ background: "#0b162b", color: "#e2e8f0" }}
-    >
-      <Form form={form} layout="vertical" onFinish={onFinish}>
-        <Form.Item label="策略总开关" name="global_enable" valuePropName="checked">
-          <Switch checkedChildren="启用" unCheckedChildren="停用" />
-        </Form.Item>
+    <div className="dashboard-shell config-shell">
+      <Card className="dashboard-hero" bordered={false}>
+        <Flex justify="space-between" align="stretch" gap={16} wrap="wrap">
+          <div>
+            <Typography.Text className="dashboard-eyebrow">参数控制台</Typography.Text>
+            <Typography.Title level={1} className="dashboard-hero__title">
+              策略参数配置
+            </Typography.Title>
+            <Typography.Paragraph className="dashboard-hero__subtitle">
+              调整资金费阈值与风险限制，实时下发到后端服务
+            </Typography.Paragraph>
+            <Space size="middle" className="dashboard-hero__actions">
+              <Button type="primary" onClick={handleRefresh} size="large">
+                拉取最新配置
+              </Button>
+              <Button onClick={handleReset} size="large" ghost>
+                重置表单
+              </Button>
+            </Space>
+          </div>
+          <Card className="config-hero-card" bordered={false}>
+            <Skeleton active loading={loading} paragraph={{ rows: 2 }}>
+              <Typography.Text className="config-hero-card__label">
+                当前状态
+              </Typography.Text>
+              {statusTag}
+              <Divider className="config-hero-card__divider" />
+              <Typography.Text className="config-hero-card__label">
+                最近更新
+              </Typography.Text>
+              <Typography.Title level={4} className="config-hero-card__timestamp">
+                {lastUpdated}
+              </Typography.Title>
+            </Skeleton>
+          </Card>
+        </Flex>
+      </Card>
 
-        <Divider orientation="left">资金费率阈值</Divider>
-        <Row gutter={16}>{thresholdItems}</Row>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onFinish}
+        disabled={loading}
+        className="config-form"
+      >
+        <Space direction="vertical" size={24} style={{ width: "100%" }}>
+          <Card className="config-card" bordered={false}>
+            <Skeleton active loading={loading} paragraph={{ rows: 0 }}>
+              <Flex justify="space-between" align="center" wrap="wrap" gap={16}>
+                <Typography.Title level={4} className="config-card__title">
+                  策略开关
+                </Typography.Title>
+                <Typography.Text className="table-cell--muted">
+                  切换后会立即影响所有策略实例
+                </Typography.Text>
+              </Flex>
+              <Form.Item
+                label="策略总开关"
+                name="global_enable"
+                valuePropName="checked"
+                className="config-form-item"
+              >
+                <Switch checkedChildren="启用" unCheckedChildren="停用" />
+              </Form.Item>
+            </Skeleton>
+          </Card>
 
-        <Divider orientation="left">风险与费用限制</Divider>
-        <Row gutter={16}>{riskItems}</Row>
+          <Card className="config-card" bordered={false}>
+            <Skeleton active loading={loading} paragraph={{ rows: 2 }}>
+              <Typography.Title level={4} className="config-card__title">
+                资金费率阈值
+              </Typography.Title>
+              <Typography.Paragraph className="config-card__subtitle">
+                控制开仓与不同平仓逻辑触发条件，单位为收益或时间阈值
+              </Typography.Paragraph>
+              <Row gutter={[16, 16]}>{thresholdItems}</Row>
+            </Skeleton>
+          </Card>
 
-        <Divider orientation="left">调度间隔</Divider>
-        <Row gutter={16}>{intervalItems}</Row>
+          <Card className="config-card" bordered={false}>
+            <Skeleton active loading={loading} paragraph={{ rows: 2 }}>
+              <Typography.Title level={4} className="config-card__title">
+                风险与费用限制
+              </Typography.Title>
+              <Typography.Paragraph className="config-card__subtitle">
+                限定整体敞口、手续费假设与每腿保证金，确保策略在安全区间运行
+              </Typography.Paragraph>
+              <Row gutter={[16, 16]}>{riskItems}</Row>
+            </Skeleton>
+          </Card>
 
-        <Space>
-          <Button type="primary" htmlType="submit">
-            保存
-          </Button>
-          <Button onClick={() => form.resetFields()}>重置</Button>
+          <Card className="config-card" bordered={false}>
+            <Skeleton active loading={loading} paragraph={{ rows: 2 }}>
+              <Typography.Title level={4} className="config-card__title">
+                调度间隔
+              </Typography.Title>
+              <Typography.Paragraph className="config-card__subtitle">
+                控制各服务轮询频率，合理设置可避免资源浪费或过度延迟
+              </Typography.Paragraph>
+              <Row gutter={[16, 16]}>{intervalItems}</Row>
+            </Skeleton>
+          </Card>
+
+          <Flex justify="flex-end" align="center" gap={12} className="config-actions">
+            <Button size="large" onClick={handleReset} ghost>
+              重置
+            </Button>
+            <Button type="primary" htmlType="submit" size="large">
+              保存
+            </Button>
+          </Flex>
         </Space>
       </Form>
-    </Card>
+    </div>
   );
 }

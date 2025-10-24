@@ -17,6 +17,8 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.append(str(ROOT_DIR))
 
 from libs.config import get_settings
+from libs.db.base import Base
+from libs.db.session import engine
 from services.stats_service.schemas import (
     DynamicStats,
     SnapshotStats,
@@ -77,6 +79,9 @@ async def snapshot_scheduler() -> None:
 # ------------------------------------------------------------------
 @app.on_event("startup")
 async def startup_event() -> None:
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+        logger.info("数据库表已确保存在。")
     global config_task
     if config_task:
         config_task.cancel()

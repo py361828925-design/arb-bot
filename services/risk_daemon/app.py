@@ -4,7 +4,7 @@ import logging
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, Iterable, Optional, Tuple
 
 from fastapi import FastAPI
 from redis.asyncio import Redis
@@ -34,22 +34,36 @@ CHECK_INTERVAL_SECONDS = 10.0
 FUNDING_STREAM = "funding_snapshots"
 
 
-async def get_latest_snapshot(exchange: str, symbol: str) -> Optional[FundingSnapshot]:
+async def fetch_latest_snapshots(pairs: Iterable[Tuple[str, str]]) -> Dict[Tuple[str, str], FundingSnapshot]:
+    """Collect the most recent snapshots needed in a single Redis round trip."""
     if not redis_client:
-        return None
-    entries = await redis_client.xrevrange(FUNDING_STREAM, "+", "-", count=200)
+        return {}
+
+    # deduplicate queries up front so we know when to stop scanning the stream
+    pending = set(pairs)
+    if not pending:
+        return {}
+
+    snapshots: Dict[Tuple[str, str], FundingSnapshot] = {}
+    entries = await redis_client.xrevrange(FUNDING_STREAM, "+", "-", count=500)
     for _, fields in entries:
-        if fields.get("exchange") == exchange and fields.get("symbol") == symbol:
+        key = (fields.get("exchange"), fields.get("symbol"))
+        if key in pending and key not in snapshots:
             try:
-                return FundingSnapshot.from_stream(fields)
+                snapshots[key] = FundingSnapshot.from_stream(fields)
             except Exception as exc:  # pragma: no cover
-                logger.warning("parse snapshot failed %s/%s: %s", exchange, symbol, exc)
-                continue
-    return None
+                logger.warning("parse snapshot failed %s/%s: %s", key[0], key[1], exc)
+        if len(snapshots) == len(pending):
+            break
+    return snapshots
 
 
-async def evaluate_group(group, now: datetime) -> Optional[Tuple[schemas.CloseDecision, Dict[str, float]]]:
-    cfg = get_runtime_config()
+def evaluate_group(
+    group,
+    now: datetime,
+    cfg,
+    snapshots: Dict[Tuple[str, str], FundingSnapshot],
+) -> Optional[Tuple[schemas.CloseDecision, Dict[str, float]]]:
     thresholds = cfg.thresholds
 
     if not group.legs:
@@ -60,8 +74,8 @@ async def evaluate_group(group, now: datetime) -> Optional[Tuple[schemas.CloseDe
     if not long_leg or not short_leg:
         return None
 
-    long_snapshot = await get_latest_snapshot(long_leg.exchange, group.symbol)
-    short_snapshot = await get_latest_snapshot(short_leg.exchange, group.symbol)
+    long_snapshot = snapshots.get((long_leg.exchange, group.symbol))
+    short_snapshot = snapshots.get((short_leg.exchange, group.symbol))
     if not long_snapshot or not short_snapshot:
         return None
 
@@ -132,8 +146,20 @@ async def risk_loop():
 
         async with AsyncSessionLocal() as session:
             groups = await repo.fetch_open_groups(session)
+            if not groups:
+                await asyncio.sleep(CHECK_INTERVAL_SECONDS)
+                continue
+
+            pairs = {
+                (leg.exchange, group.symbol)
+                for group in groups
+                for leg in getattr(group, "legs", [])
+                if leg.exchange and group.symbol
+            }
+            snapshots = await fetch_latest_snapshots(pairs)
+
             for group in groups:
-                result = await evaluate_group(group, now)
+                result = evaluate_group(group, now, cfg, snapshots)
                 if not result:
                     continue
                 decision, close_prices = result
@@ -149,9 +175,9 @@ async def risk_loop():
 
 
 async def _config_listener():
-    subscriber = ConfigSubscriber(settings.redis_url)
-    await subscriber.start(apply_update)
-    return subscriber
+    global config_subscriber
+    config_subscriber = ConfigSubscriber(settings.redis_url)
+    await config_subscriber.start(apply_update)
 
 
 @app.on_event("startup")

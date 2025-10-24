@@ -15,9 +15,29 @@ class FundingSnapshot(BaseModel):
     index_price: Optional[float] = None
     captured_at_ms: int
 
+    def _effective_interval_hours(self) -> float:
+        """Return the best-guess funding interval in hours for normalization."""
+        if self.settle_interval_hours and self.settle_interval_hours > 0:
+            return float(self.settle_interval_hours)
+
+        countdown_hours = self.settle_countdown_secs / 3600
+        if countdown_hours > 0:
+            return countdown_hours
+
+        return 8.0
+
     @property
     def rate8h(self) -> float:
-        return self.funding_rate_raw * (8 / self.settle_interval_hours)
+        interval_hours = self._effective_interval_hours()
+        if interval_hours <= 0:
+            return self.funding_rate_raw
+
+        scale = 8.0 / interval_hours
+        baseline = 1.0 + self.funding_rate_raw
+        if baseline <= 0:
+            return self.funding_rate_raw * scale
+
+        return pow(baseline, scale) - 1.0
 
     @property
     def settle_countdown_secs(self) -> int:

@@ -25,6 +25,7 @@ class RiskLimits(BaseModel):
     margin_per_leg: float = 100.0
     taker_fee: float = 0.0006
     maker_fee: float = 0.0002
+    trade_fee: float = 0.0006
 
 
 class Settings(BaseSettings):
@@ -32,6 +33,8 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     config_service_url: str = "http://localhost:8003"
     scan_interval_seconds: float = 10.0
+    close_interval_seconds: float = 5.0
+    open_interval_seconds: float = 5.0
     thresholds: Thresholds = Thresholds()
     risk_limits: RiskLimits = RiskLimits()
     telegram_bot_token: str | None = None

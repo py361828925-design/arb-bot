@@ -16,6 +16,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from libs.bus import ConfigNotifier
 from libs.config import get_settings
+from libs.db.base import Base
+from libs.db.session import engine
 from services.config_service import crud, schemas
 from services.config_service.deps import get_session
 
@@ -49,7 +51,7 @@ _notifier: Optional[ConfigNotifier] = None
 # -----------------------------------------------------------------------------
 # 实用函数
 # -----------------------------------------------------------------------------
-def _select_schema(*names: str) -> Any:
+def _select_schema(*names: str) -> type[Any]:
     for name in names:
         if hasattr(schemas, name):
             return getattr(schemas, name)
@@ -87,17 +89,23 @@ def _actor_from_payload(payload: Any, default: str = "api") -> str:
 async def _publish_profile(profile: Any) -> None:
     if not _notifier:
         return
-    if hasattr(_notifier, "publish_profile"):
-        await _notifier.publish_profile(profile)
-    elif hasattr(_notifier, "notify"):
-        await _notifier.notify(profile)
+    try:
+        if hasattr(_notifier, "publish_profile"):
+            await _notifier.publish_profile(profile)
+        elif hasattr(_notifier, "notify"):
+            await _notifier.notify(profile)
+    except Exception as exc:
+        logger.warning("配置推送失败，将忽略此错误: %s", exc)
 
 
 async def _publish_audit(audit: Any) -> None:
     if not _notifier:
         return
-    if hasattr(_notifier, "publish_audit"):
-        await _notifier.publish_audit(audit)
+    try:
+        if hasattr(_notifier, "publish_audit"):
+            await _notifier.publish_audit(audit)
+    except Exception as exc:
+        logger.warning("审计推送失败，将忽略此错误: %s", exc)
 
 
 async def _ensure_initial_profile(session: AsyncSession) -> None:
@@ -131,9 +139,16 @@ async def _ensure_initial_profile(session: AsyncSession) -> None:
 @app.on_event("startup")
 async def on_startup() -> None:
     global _notifier
-    logger.info("启动 Config Service，准备连接 Redis 通知通道。")
-    _notifier = ConfigNotifier(settings=_settings)
-    await _notifier.connect()
+    logger.info("启动 Config Service，准备初始化数据库并连接 Redis 通知通道。")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+        logger.info("数据库表已确保存在。")
+    try:
+        _notifier = ConfigNotifier(settings=_settings)
+        await _notifier.connect()
+    except Exception as exc:
+        logger.warning("初始化 Redis 通知通道失败，将以降级模式运行: %s", exc)
+        _notifier = None
 
     async for session in get_session():
         try:

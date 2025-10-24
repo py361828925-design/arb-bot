@@ -19,6 +19,7 @@
     "swr": "^2.3.4"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.1.0",
     "@types/node": "^20.14.2",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",

@@ -9,6 +9,7 @@ import sys
 from typing import Dict, List, Optional
 
 from redis.asyncio import Redis
+from redis.exceptions import RedisError
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -45,12 +46,12 @@ class StatsService:
         await self._redis.close()
 
     async def get_dynamic_stats(self) -> DynamicStats:
-        cached = await self._redis.get(self._dynamic_cache_key)
+        cached = await self._safe_redis_get(self._dynamic_cache_key)
         if cached:
             return DynamicStats.model_validate_json(cached)
 
         stats = await self._recompute_dynamic_stats()
-        await self._redis.set(
+        await self._safe_redis_set(
             self._dynamic_cache_key,
             stats.model_dump_json(),
             ex=5,
@@ -332,7 +333,9 @@ class StatsService:
         )
 
     async def _get_latest_snapshot(self, exchange: str, symbol: str) -> Optional[FundingSnapshot]:
-        entries = await self._redis.xrevrange(self._funding_stream, "+", "-", count=200)
+        entries = await self._safe_xrevrange(self._funding_stream, "+", "-", count=200)
+        if not entries:
+            return None
         for _, fields in entries:
             if fields.get("exchange") == exchange and fields.get("symbol") == symbol:
                 try:
@@ -340,6 +343,32 @@ class StatsService:
                 except Exception:
                     continue
         return None
+
+    async def _safe_redis_get(self, key: str) -> str | None:
+        if self._redis is None:
+            return None
+        try:
+            return await self._redis.get(key)
+        except RedisError as exc:
+            logger.warning("Redis GET 失败: %s", exc)
+            return None
+
+    async def _safe_redis_set(self, key: str, value: str, **kwargs) -> None:
+        if self._redis is None:
+            return
+        try:
+            await self._redis.set(key, value, **kwargs)
+        except RedisError as exc:
+            logger.warning("Redis SET 失败: %s", exc)
+
+    async def _safe_xrevrange(self, stream: str, start: str, end: str, **kwargs) -> list[tuple[str, dict[str, str]]] | None:
+        if self._redis is None:
+            return None
+        try:
+            return await self._redis.xrevrange(stream, start, end, **kwargs)
+        except RedisError as exc:
+            logger.warning("Redis XREVRANGE 失败: %s", exc)
+            return None
 
 
 def _to_float(value: Optional[Decimal | float | int]) -> float:
