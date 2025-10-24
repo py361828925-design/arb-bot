@@ -20,35 +20,43 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Add scheduling interval columns."""
-    op.add_column(
-        "config_profiles",
-        sa.Column(
-            "scan_interval_seconds",
-            sa.Float(),
-            nullable=False,
-            server_default="10.0",
-        ),
-    )
-    op.add_column(
-        "config_profiles",
-        sa.Column(
-            "close_interval_seconds",
-            sa.Float(),
-            nullable=False,
-            server_default="5.0",
-        ),
-    )
-    op.add_column(
-        "config_profiles",
-        sa.Column(
-            "open_interval_seconds",
-            sa.Float(),
-            nullable=False,
-            server_default="5.0",
-        ),
-    )
-
     bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    existing_columns = {column["name"] for column in inspector.get_columns("config_profiles")}
+
+    if "scan_interval_seconds" not in existing_columns:
+        op.add_column(
+            "config_profiles",
+            sa.Column(
+                "scan_interval_seconds",
+                sa.Float(),
+                nullable=False,
+                server_default="10.0",
+            ),
+        )
+
+    if "close_interval_seconds" not in existing_columns:
+        op.add_column(
+            "config_profiles",
+            sa.Column(
+                "close_interval_seconds",
+                sa.Float(),
+                nullable=False,
+                server_default="5.0",
+            ),
+        )
+
+    if "open_interval_seconds" not in existing_columns:
+        op.add_column(
+            "config_profiles",
+            sa.Column(
+                "open_interval_seconds",
+                sa.Float(),
+                nullable=False,
+                server_default="5.0",
+            ),
+        )
+
     if bind.dialect.name != "sqlite":
         # remove server defaults when backend supports ALTER COLUMN
         op.alter_column(
