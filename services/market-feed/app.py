@@ -2,7 +2,8 @@ import os
 import sys
 import asyncio
 import logging
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager       
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 import httpx
@@ -48,6 +49,7 @@ class FundingFeed:
         self._timeout = getattr(settings, "http_timeout_secs", 10)
         self._bitget_symbol_limit = getattr(settings, "bitget_symbol_limit", None)
         self._bitget_concurrency = getattr(settings, "bitget_concurrency", 5)
+        self._bitget_debug_logged = 0
 
     async def start(self) -> None:
         if self._client is None:
@@ -78,9 +80,13 @@ class FundingFeed:
                 await self._refresh()
             except Exception as exc:
                 logger.exception("refresh funding snapshot failed: %s", exc)
+            finally:
+                logger.debug("funding refresh cycle complete")
             await asyncio.sleep(self._interval)
 
     async def _refresh(self) -> None:
+        logger.debug("start refresh: bitget concurrency=%s limit=%s", self._bitget_concurrency, self._bitget_symbol_limit)
+
         binance = await self._fetch_binance()
         bitget = await self._fetch_bitget()
         if binance:
@@ -191,6 +197,20 @@ class FundingFeed:
                     payload = resp.json()
                     data = payload.get("data")
                     if not data:
+                        logger.warning(
+                            "bitget funding response empty (%s via %s): %s",
+                            contract_symbol,
+                            url,
+                            payload,
+                        )
+                        if self._bitget_debug_logged < 5:
+                            logger.error(
+                                "bitget empty data payload (%s via %s): %s",
+                                contract_symbol,
+                                url,
+                                payload,
+                            )
+                            self._bitget_debug_logged += 1
                         continue
                     if isinstance(data, dict):
                         # v1 接口返回 dict，资金费率位于 data["data"][0]
@@ -204,14 +224,32 @@ class FundingFeed:
                         records = data if isinstance(data, list) else []
 
                     if not records:
+                        logger.warning(
+                            "bitget funding records empty (%s via %s): %s",
+                            contract_symbol,
+                            url,
+                            payload,
+                        )
+                        if self._bitget_debug_logged < 5:
+                            logger.error(
+                                "bitget empty records payload (%s via %s): %s",
+                                contract_symbol,
+                                url,
+                                payload,
+                            )
+                            self._bitget_debug_logged += 1
                         continue
 
                     snapshot_raw = dict(records[0])
+                    logger.warning("bitget raw snapshot %s", snapshot_raw)
+                    if self._bitget_debug_logged < 5:
+                        logger.error("bitget raw snapshot debug %s", snapshot_raw)
+                        self._bitget_debug_logged += 1
                     snapshot_raw.setdefault("symbol", contract_symbol)
                     try:
                         return self._make_bitget_snapshot(snapshot_raw)
                     except Exception as exc:
-                        logger.debug("normalize bitget funding failed (%s): %s", contract_symbol, exc)
+                        logger.warning("normalize bitget funding failed (%s): %s", contract_symbol, exc)
                         return None
 
                 return None
@@ -226,10 +264,16 @@ class FundingFeed:
         if not tasks:
             return []
 
-        results = await asyncio.gather(*tasks, return_exceptions=False)
-        for snapshot in results:
-            if snapshot:
-                snapshots.append(snapshot)
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        for symbol, result in zip(contracts, results):
+            symbol_name = symbol.get("symbol") if isinstance(symbol, dict) else symbol
+            if isinstance(result, Exception):
+                logger.warning("bitget fetch task failed (%s): %s", symbol_name, result)
+                continue
+            if result:
+                snapshots.append(result)
+            else:
+                logger.warning("bitget funding empty after parse for %s", symbol_name)
 
         logger.info("Fetched %d bitget funding entries", len(snapshots))
         return snapshots
@@ -244,12 +288,51 @@ class FundingFeed:
 
     @staticmethod
     def _make_bitget_snapshot(item: dict) -> FundingSnapshot:
-        raw_rate = float(item.get("fundingRate", 0.0))
-        settle_hours = float(item.get("fundingRateInterval", 8))
-        next_time_ms = int(item.get("nextUpdate") or 0)
+        # Handle both v1 and v2 field names from Bitget responses.
+        def _first_non_null(*keys, default=None):
+            for key in keys:
+                if key in item:
+                    value = item.get(key)
+                    if value is not None and value != "":
+                        return value
+            return default
 
-        symbol = item.get("symbol", "")
+        def _coerce_float(value, default=0.0) -> float:
+            try:
+                return float(value)
+            except (TypeError, ValueError):
+                return float(default)
+
+        def _coerce_int(value, default=0) -> int:
+            try:
+                return int(float(value))
+            except (TypeError, ValueError):
+                return int(default)
+
+        raw_rate_value = _first_non_null("fundingRate", "fundRate", "realTimeFundRate", default=0.0)
+        raw_rate = _coerce_float(raw_rate_value, 0.0)
+
+        interval_value = _first_non_null(
+            "fundingRateInterval",
+            "fundingInterval",
+            "fundInterval",
+            "fundingTimeInterval",
+            default=8,
+        )
+        settle_hours = float(FundingFeed._parse_interval(interval_value))
+
+        next_time_value = _first_non_null(
+            "nextUpdate",
+            "nextFundTime",
+            "nextFundingTime",
+            "nextTimestamp",
+            default=0,
+        )
+        next_time_ms = _coerce_int(next_time_value, 0)
+
+        symbol = _first_non_null("symbol", "symbolName", "instId", default="")
         normalized_symbol = FundingFeed._normalize_bitget_symbol(symbol)
+        captured_at_ms = int(datetime.now(tz=timezone.utc).timestamp() * 1000)
 
         return FundingSnapshot(
             exchange="bitget",
@@ -257,6 +340,10 @@ class FundingFeed:
             funding_rate_raw=raw_rate,
             settle_interval_hours=settle_hours,
             next_funding_time_ms=next_time_ms,
+            instrument=symbol,
+            mark_price=None,
+            index_price=None,
+            captured_at_ms=captured_at_ms,
         )
 
     @staticmethod

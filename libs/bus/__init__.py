@@ -217,3 +217,14 @@ class ConfigSubscriber:
                     logger.warning("apply config update failed: %s", exc)
         except asyncio.CancelledError:
             pass
+
+
+from .opportunity_publisher import OpportunityPublisher
+
+
+__all__ = [
+    "FundingPublisher",
+    "ConfigNotifier",
+    "ConfigSubscriber",
+    "OpportunityPublisher",
+]
