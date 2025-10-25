@@ -32,8 +32,21 @@ app = FastAPI(
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://0.0.0.0:3000",
+    "http://47.84.57.96:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+    "http://0.0.0.0:3001",
+    "http://47.84.57.96:3001",
     "http://8.222.222.128:3000",  # 如果有其它前端域名或端口，在这里追加
 ]
+
+public_origins = os.getenv("FRONTEND_ORIGINS")
+if public_origins:
+    for item in public_origins.split(","):
+        origin = item.strip()
+        if origin and origin not in origins:
+            origins.append(origin)
 
 app.add_middleware(
     CORSMiddleware,

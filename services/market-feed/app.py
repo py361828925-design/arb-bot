@@ -25,8 +25,10 @@ BITGET_CONTRACTS_URLS = [
     "https://api.bitget.com/api/v2/mix/market/contracts",
     "https://api.bitget.com/api/mix/v1/market/contracts",
 ]
-BITGET_FUNDING_URLS = [
+BITGET_FUNDING_ENDPOINTS = [
+    # (url, include_margin_coin_param)
     ("https://api.bitget.com/api/v2/mix/market/current-fund-rate", True),
+    ("https://api.bitget.com/api/mix/v1/market/currentFundRate", False),
 ]
 
 
@@ -169,27 +171,50 @@ class FundingFeed:
 
         async def fetch_one(contract_symbol: str) -> Optional[FundingSnapshot]:
             async with semaphore:
-                try:
-                    clean_symbol = contract_symbol.split("_", 1)[0]
-                    margin_coin = contract_margin.get(contract_symbol, "USDT")
-                    params = {
-                        "symbol": clean_symbol,
-                        "productType": product_type_upper,
-                        "marginCoin": margin_coin,
-                    }
+                params_base = {
+                    "symbol": contract_symbol.split("_", 1)[0],
+                    "productType": product_type_upper,
+                    "marginCoin": contract_margin.get(contract_symbol, "USDT"),
+                }
 
-                    resp = await self._client.get(BITGET_FUNDING_URL, params=params)
-                    resp.raise_for_status()
+                for url, with_margin in BITGET_FUNDING_ENDPOINTS:
+                    params = dict(params_base)
+                    if not with_margin:
+                        params.pop("marginCoin", None)
+                    try:
+                        resp = await self._client.get(url, params=params)
+                        resp.raise_for_status()
+                    except Exception as exc:
+                        logger.debug("bitget funding request failed via %s: %s", url, exc)
+                        continue
+
                     payload = resp.json()
-                    data = payload.get("data") or []
+                    data = payload.get("data")
                     if not data:
-                        return None
-                    snapshot_raw = dict(data[0])
+                        continue
+                    if isinstance(data, dict):
+                        # v1 接口返回 dict，资金费率位于 data["data"][0]
+                        if "data" in data and isinstance(data["data"], list):
+                            records = data["data"]
+                        elif "list" in data and isinstance(data["list"], list):
+                            records = data["list"]
+                        else:
+                            records = [data]
+                    else:
+                        records = data if isinstance(data, list) else []
+
+                    if not records:
+                        continue
+
+                    snapshot_raw = dict(records[0])
                     snapshot_raw.setdefault("symbol", contract_symbol)
-                    return self._make_bitget_snapshot(snapshot_raw)
-                except Exception as exc:
-                    logger.debug("fetch bitget funding failed: %s (%s)", contract_symbol, exc)
-                    return None
+                    try:
+                        return self._make_bitget_snapshot(snapshot_raw)
+                    except Exception as exc:
+                        logger.debug("normalize bitget funding failed (%s): %s", contract_symbol, exc)
+                        return None
+
+                return None
 
         tasks = []
         for contract in contracts:

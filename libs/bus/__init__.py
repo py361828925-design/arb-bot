@@ -31,7 +31,8 @@ class FundingPublisher:
 
     def __init__(self, settings: Any) -> None:
         self._redis_url = getattr(settings, "redis_url", "redis://localhost:6379/0")
-        self._stream_key = getattr(settings, "funding_stream_key", "funding:snapshots")
+        # 默认改为与其余服务一致的命名，避免订阅端取不到数据
+        self._stream_key = getattr(settings, "funding_stream_key", "funding_snapshots")
         self._maxlen = getattr(settings, "funding_stream_maxlen", 1000)
         self._redis: Optional[Redis] = None
 
@@ -59,6 +60,9 @@ class FundingPublisher:
         if self._redis is None:
             raise RuntimeError("FundingPublisher not connected")
         payload = snapshot.model_dump()
+        # 这些派生字段在消费者端很常用，直接落到 stream 里减少重复计算
+        payload["rate8h"] = snapshot.rate8h
+        payload["settle_countdown_secs"] = snapshot.settle_countdown_secs
         fields = _as_stream_fields(payload)
         entry_id = await self._redis.xadd(
             self._stream_key,

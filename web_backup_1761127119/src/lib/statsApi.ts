@@ -1,21 +1,34 @@
-const API_BASE =
-  process.env.NEXT_PUBLIC_STATS_API_URL ?? "http://localhost:8006";
+const resolveApiBase = (): string => {
+  if (process.env.NEXT_PUBLIC_STATS_API_URL) {
+    return process.env.NEXT_PUBLIC_STATS_API_URL;
+  }
+
+  if (typeof window !== "undefined") {
+    const { protocol, hostname } = window.location;
+    return `${protocol}//${hostname}:8006`;
+  }
+
+  return "http://127.0.0.1:8006";
+};
 
 export async function fetchDynamicStats() {
-  const res = await fetch(`${API_BASE}/stats/dynamic`, { cache: "no-store" });
+  const apiBase = resolveApiBase();
+  const res = await fetch(`${apiBase}/stats/dynamic`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch dynamic stats");
   return res.json();
 }
 
 export async function fetchOpenPositions() {
-  const res = await fetch(`${API_BASE}/positions/open`, { cache: "no-store" });
+  const apiBase = resolveApiBase();
+  const res = await fetch(`${apiBase}/positions/open`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch open positions");
   return res.json();
 }
 
 export async function fetchSnapshotList(limit = 60) {
+  const apiBase = resolveApiBase();
   const res = await fetch(
-    `${API_BASE}/stats/static/list?limit=${limit}`,
+    `${apiBase}/stats/static/list?limit=${limit}`,
     { cache: "no-store" }
   );
   if (!res.ok) throw new Error("Failed to fetch snapshot list");
