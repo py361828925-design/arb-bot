@@ -85,6 +85,7 @@ class FundingFeed:
             await asyncio.sleep(self._interval)
 
     async def _refresh(self) -> None:
+        self._bitget_debug_logged = 0
         logger.debug("start refresh: bitget concurrency=%s limit=%s", self._bitget_concurrency, self._bitget_symbol_limit)
 
         binance = await self._fetch_binance()
