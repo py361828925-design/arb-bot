@@ -51,7 +51,10 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_stats_snapshots_snapshot_date'), 'stats_snapshots', ['snapshot_date'], unique=False)
     op.add_column('position_groups', sa.Column('realized_pnl', sa.Float(), nullable=False, server_default='0'))
-    op.alter_column('position_groups', 'realized_pnl', server_default=None)
+
+    bind = op.get_bind()
+    if bind.dialect.name != "sqlite":
+        op.alter_column('position_groups', 'realized_pnl', server_default=None)
 
     # ### end Alembic commands ###
 
