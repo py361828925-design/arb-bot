@@ -232,15 +232,15 @@ export default function HistoryPage() {
             </Typography.Paragraph>
           </div>
 
-          <Card className="chart-card" title="净利润趋势" bordered={false}>
+          <Card className="chart-card" title="净利润趋势" variant="borderless">
             <Line {...lineConfig} />
           </Card>
 
-          <Card className="chart-card" title="各逻辑平仓金额" bordered={false}>
+          <Card className="chart-card" title="各逻辑平仓金额" variant="borderless">
             <Column {...columnConfig} />
           </Card>
 
-          <Card className="chart-card" title="每日统计快照" bordered={false}>
+          <Card className="chart-card" title="每日统计快照" variant="borderless">
             <Table
               columns={tableColumns}
               dataSource={dataSource}
@@ -251,7 +251,7 @@ export default function HistoryPage() {
             />
           </Card>
 
-          <Card className="chart-card" title="开/平仓事件" bordered={false}>
+          <Card className="chart-card" title="开/平仓事件" variant="borderless">
             <Spin spinning={loadingEvents && !events}>
               <Table
                 columns={eventColumns}

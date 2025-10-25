@@ -307,7 +307,7 @@ export default function DashboardPage() {
 
   return (
     <div className="dashboard-shell">
-      <Card className="dashboard-hero" bordered={false}>
+  <Card className="dashboard-hero" variant="borderless">
         <Flex justify="space-between" align="flex-start" gap={16} wrap="wrap">
           <div>
             <Typography.Text className="dashboard-eyebrow">策略驾驶舱</Typography.Text>
@@ -326,7 +326,7 @@ export default function DashboardPage() {
               </Button>
             </Space>
           </div>
-          <Card className="dashboard-meta" bordered={false}>
+          <Card className="dashboard-meta" variant="borderless">
             <Typography.Text className="dashboard-meta__label">数据刷新</Typography.Text>
             <Segmented
               value={refreshMode}
@@ -367,7 +367,7 @@ export default function DashboardPage() {
         ) : (
           topStats.map((card) => (
             <Col xs={24} sm={12} md={12} lg={6} key={card.title}>
-              <Card className="stat-card" bordered={false}>
+              <Card className="stat-card" variant="borderless">
                 <Statistic
                   title={card.title}
                   value={card.amount.toFixed(2)}
@@ -402,7 +402,7 @@ export default function DashboardPage() {
         ) : (
           logicStats.map((card) => (
             <Col xs={12} md={8} lg={4} key={card.title}>
-              <Card bordered={false}>
+              <Card variant="borderless">
                 <Statistic
                   title={card.title}
                   value={card.amount.toFixed(2)}
@@ -418,7 +418,7 @@ export default function DashboardPage() {
       <Card
         className="data-card"
         title="实时仓位"
-        bordered={false}
+        variant="borderless"
         extra={<span className="table-cell--muted">{refreshLabel}</span>}
       >
         {loadingPositions ? (

@@ -176,7 +176,7 @@ export default function DashboardPage() {
                   { title: "净利润", value: dynamicStats.net_profit },
                 ].map((card) => (
                   <Col span={6} key={card.title}>
-                    <Card bordered={false} style={{ background: "#111c33" }}>
+                    <Card variant="borderless" style={{ background: "#111c33" }}>
                       <Statistic
                         title={card.title}
                         value={card.value.toFixed(2)}
@@ -222,6 +222,7 @@ export default function DashboardPage() {
             title="实时仓位"
             style={{ marginTop: 24, background: "#0b162b" }}
             bodyStyle={{ padding: 0 }}
+            variant="borderless"
           >
             <Table
               dataSource={positionRows}

@@ -279,7 +279,7 @@ export default function ConfigPage() {
 
   return (
     <div className="dashboard-shell config-shell">
-      <Card className="dashboard-hero" bordered={false}>
+  <Card className="dashboard-hero" variant="borderless">
         <Flex justify="space-between" align="stretch" gap={16} wrap="wrap">
           <div>
             <Typography.Text className="dashboard-eyebrow">参数控制台</Typography.Text>
@@ -298,7 +298,7 @@ export default function ConfigPage() {
               </Button>
             </Space>
           </div>
-          <Card className="config-hero-card" bordered={false}>
+          <Card className="config-hero-card" variant="borderless">
             <Skeleton active loading={loading} paragraph={{ rows: 2 }}>
               <Typography.Text className="config-hero-card__label">
                 当前状态
@@ -324,7 +324,7 @@ export default function ConfigPage() {
         className="config-form"
       >
         <Space direction="vertical" size={24} style={{ width: "100%" }}>
-          <Card className="config-card" bordered={false}>
+          <Card className="config-card" variant="borderless">
             <Skeleton active loading={loading} paragraph={{ rows: 0 }}>
               <Flex justify="space-between" align="center" wrap="wrap" gap={16}>
                 <Typography.Title level={4} className="config-card__title">
@@ -345,7 +345,7 @@ export default function ConfigPage() {
             </Skeleton>
           </Card>
 
-          <Card className="config-card" bordered={false}>
+          <Card className="config-card" variant="borderless">
             <Skeleton active loading={loading} paragraph={{ rows: 2 }}>
               <Typography.Title level={4} className="config-card__title">
                 资金费率阈值
@@ -357,7 +357,7 @@ export default function ConfigPage() {
             </Skeleton>
           </Card>
 
-          <Card className="config-card" bordered={false}>
+          <Card className="config-card" variant="borderless">
             <Skeleton active loading={loading} paragraph={{ rows: 2 }}>
               <Typography.Title level={4} className="config-card__title">
                 风险与费用限制
@@ -369,7 +369,7 @@ export default function ConfigPage() {
             </Skeleton>
           </Card>
 
-          <Card className="config-card" bordered={false}>
+          <Card className="config-card" variant="borderless">
             <Skeleton active loading={loading} paragraph={{ rows: 2 }}>
               <Typography.Title level={4} className="config-card__title">
                 调度间隔
