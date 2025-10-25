@@ -242,10 +242,19 @@ class FundingFeed:
                         continue
 
                     snapshot_raw = dict(records[0])
-                    logger.warning("bitget raw snapshot %s", snapshot_raw)
                     if self._bitget_debug_logged < 5:
-                        logger.error("bitget raw snapshot debug %s", snapshot_raw)
+                        logger.warning(
+                            "bitget raw snapshot sample (%s): %s",
+                            contract_symbol,
+                            snapshot_raw,
+                        )
                         self._bitget_debug_logged += 1
+                    else:
+                        logger.debug(
+                            "bitget raw snapshot (%s): %s",
+                            contract_symbol,
+                            snapshot_raw,
+                        )
                     snapshot_raw.setdefault("symbol", contract_symbol)
                     try:
                         return self._make_bitget_snapshot(snapshot_raw)
