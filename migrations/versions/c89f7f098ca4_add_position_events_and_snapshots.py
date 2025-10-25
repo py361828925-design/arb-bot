@@ -35,7 +35,7 @@ def upgrade() -> None:
             sa.Column('logic_reason', sa.String(length=32), nullable=True),
             sa.Column('realized_pnl', sa.Float(), nullable=False, server_default='0'),
             sa.Column('data', sa.JSON(), nullable=True),
-            sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+            sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
             sa.PrimaryKeyConstraint('id'),
         )
         op.create_index(op.f('ix_position_events_group_id'), 'position_events', ['group_id'], unique=False)
@@ -54,7 +54,7 @@ def upgrade() -> None:
             sa.Column('logic5_amount', sa.Numeric(precision=18, scale=8), nullable=False),
             sa.Column('net_profit', sa.Numeric(precision=18, scale=8), nullable=False),
             sa.Column('raw_stats', sa.JSON(), nullable=True),
-            sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+            sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
             sa.PrimaryKeyConstraint('id'),
         )
         op.create_index(op.f('ix_stats_snapshots_snapshot_date'), 'stats_snapshots', ['snapshot_date'], unique=False)

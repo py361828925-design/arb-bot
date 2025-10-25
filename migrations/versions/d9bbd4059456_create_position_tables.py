@@ -37,8 +37,8 @@ def upgrade() -> None:
     sa.Column('opened_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('closed_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('close_reason', sa.String(length=64), nullable=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_position_groups_group_id'), 'position_groups', ['group_id'], unique=True)

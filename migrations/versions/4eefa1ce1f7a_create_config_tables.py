@@ -27,7 +27,7 @@ def upgrade() -> None:
     sa.Column('operator', sa.String(length=64), nullable=False),
     sa.Column('action', sa.String(length=128), nullable=False),
     sa.Column('detail', sa.JSON(), nullable=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('config_profiles',
@@ -37,7 +37,7 @@ def upgrade() -> None:
     sa.Column('risk_limits', sa.JSON(), nullable=False),
     sa.Column('global_enable', sa.Boolean(), nullable=False),
     sa.Column('created_by', sa.String(length=64), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('version')
     )
